@@ -1,0 +1,15 @@
+# Ignore database files
+af_forms.db
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+
+# Ignore environment files
+.env
+venv/
+env/
+
+# Ignore system files
+.DS_Store
+Thumbs.db
