@@ -14,8 +14,8 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
 class AFFormsScraper:
-    def __init__(self):
-        self.base_url = "https://www.e-publishing.af.mil/Product-Index/#/?view=pubs&orgID=10141&catID=1&series=-1&modID=449&tabID=131"
+    def __init__(self, base_urls):
+        self.base_urls = base_urls
         self.db_name = "af_forms.db"
         
         # Setup logging
@@ -189,11 +189,15 @@ class AFFormsScraper:
         c = conn.cursor()
         
         for form in forms:
-            c.execute('''INSERT INTO forms 
-                        (form_number, title, description, category, pdf_url, last_updated)
-                        VALUES (?, ?, ?, ?, ?, datetime('now'))''',
-                     (form['form_number'], form['title'], form['description'],
-                      form['category'], form['pdf_url']))
+            # Check if the form already exists
+            c.execute('SELECT id FROM forms WHERE form_number = ?', (form['form_number'],))
+            if c.fetchone() is None:
+                # Insert the form if it doesn't exist
+                c.execute('''INSERT INTO forms 
+                            (form_number, title, description, category, pdf_url, last_updated)
+                            VALUES (?, ?, ?, ?, ?, datetime('now'))''',
+                         (form['form_number'], form['title'], form['description'],
+                          form['category'], form['pdf_url']))
         
         conn.commit()
         conn.close()
@@ -204,15 +208,17 @@ class AFFormsScraper:
             print("Setting up database...")
             self.setup_database()
             
-            print("Scraping forms...")
-            forms = self.get_form_links()
-            
-            print(f"Found {len(forms)} forms")
-            if forms:
-                self.save_to_database(forms)
-                print("Forms saved to database")
-            else:
-                print("No forms found to save")
+            for url in self.base_urls:
+                print(f"Scraping forms from {url}...")
+                self.base_url = url
+                forms = self.get_form_links()
+                
+                print(f"Found {len(forms)} forms")
+                if forms:
+                    self.save_to_database(forms)
+                    print("Forms saved to database")
+                else:
+                    print("No forms found to save")
                 
         except Exception as e:
             self.logger.error(f"Error in run method: {str(e)}", exc_info=True)
@@ -271,3 +277,14 @@ def navigate_to_next_page(driver):
         print(f"Error navigating to next page: {e}")
         # Optionally, log the error or take a screenshot for debugging
         # driver.save_screenshot('error_screenshot.png')
+
+# Example usage
+if __name__ == "__main__":
+    base_urls = [
+        "https://www.e-publishing.af.mil/Product-Index/#/?view=pubs&orgID=10141&catID=1&series=-1&modID=449&tabID=131",
+        "https://www.e-publishing.af.mil/Product-Index/#/?view=form&orgID=10141&catID=8&low=-1&high=-1&modID=449&tabID=131",
+        "https://www.e-publishing.af.mil/Product-Index/#/?view=cat&catID=14"
+    ]
+    
+    scraper = AFFormsScraper(base_urls)
+    scraper.run()
