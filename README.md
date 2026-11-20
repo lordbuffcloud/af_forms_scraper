@@ -1,6 +1,6 @@
 # AF Forms Scraper
 
-I got tired of the bad search engine on EPUBS and made a web scraper for extracting Air Force forms from the e-Publishing website and storing them in a SQLite database.
+I got tired of the bad search engine on EPUBS and built a web scraper that pulls Air Force forms from e-Publishing into a SQLite database.
 
 Going to use it for my site [BePubs](https://bepubs.glxy.dev).
 
@@ -53,7 +53,7 @@ Going to use it for my site [BePubs](https://bepubs.glxy.dev).
 ## Troubleshooting
 
 - Ensure ChromeDriver is compatible with your installed version of Google Chrome.
-- If you encounter issues with Selenium, check the documentation for troubleshooting tips.
+- ChromeDriver is auto-managed by webdriver_manager in af_forms_scraper.py, so a version mismatch usually means Chrome itself needs updating.
 
 ## License
 

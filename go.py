@@ -1,8 +1,11 @@
+# ⬡ CK42X · ck42x.com
+# MODULE: configure logging and scrape three e-publishing.af.mil indexes into af_forms.db
+# gold on black. sting once.
 from af_forms_scraper import AFFormsScraper
 import logging
 
 def main():
-    # Set up logging
+    """configure logging and scrape the three index urls; failures are logged, not raised."""
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s - %(levelname)s - %(message)s'

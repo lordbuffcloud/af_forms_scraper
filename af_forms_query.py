@@ -1,11 +1,21 @@
+# ⬡ CK42X · ck42x.com
+# MODULE: read-only queries over the scraped af forms sqlite db
+# gold on black. sting once.
+"""reads the forms table written by af_forms_scraper.py; rows become plain dicts."""
+
 import sqlite3
 
 class AFFormsQuery:
+    """read-only lookups over the forms table; returns dicts and never raises on no match."""
     def __init__(self, db_name="af_forms.db"):
+        """db path defaults to af_forms.db, the file the scraper writes."""
         self.db_name = db_name
 
     def search_forms(self, query):
-        """Search forms by keyword in title, description, or form number"""
+        """substring match on title, description, or form_number; returns a list of dicts, never None.
+
+        TRAP: the query is interpolated into LIKE unescaped, so % and _ act as wildcards.
+        """
         conn = sqlite3.connect(self.db_name)
         c = conn.cursor()
         
@@ -21,7 +31,7 @@ class AFFormsQuery:
         return [self._format_result(r) for r in results]
 
     def get_form_by_number(self, form_number):
-        """Get specific form by its number"""
+        """exact form_number match; returns one dict or None."""
         conn = sqlite3.connect(self.db_name)
         c = conn.cursor()
         
@@ -32,7 +42,10 @@ class AFFormsQuery:
         return self._format_result(result) if result else None
 
     def _format_result(self, row):
-        """Format database row into dictionary"""
+        """map a forms row to a dict, dropping row[0] (the id).
+
+        INVARIANT: positions 1..6 must match the forms column order in af_forms_scraper.py.
+        """
         return {
             'form_number': row[1],
             'title': row[2],
